@@ -1,0 +1,96 @@
+调整全局阈值（glob_thresh）
+全局阈值用于确定图像中被视为前景（即目标结构）的像素强度阈值。调整此参数的步骤如下：
+
+起始值：从较低的值开始，比如0.1或0.2，这可以帮助您观察到较暗的结构。
+增量调整：逐步增加阈值（比如以0.05或0.1的增量），观察掩模如何变化，直到大部分的背景噪声被排除，而目标结构仍然被保留。
+调整自适应阈值（adapt_thresh）
+自适应阈值考虑到图像的局部特性，以不同的阈值处理不同区域的像素，适合处理光照变化较大的图像。调整此参数的步骤如下：
+
+选择适当的窗口大小：adapt_thresh 通常设置为你期望捕捉到的最小结构大小的像素单位。例如，如果目标结构的大小大约为10像素，可以从这个值开始尝试。
+细化调整：根据需要增大或减小此值。如果你发现掩模丢失了一些重要的细节，可能需要减小 adapt to_thresh；如果掩模包含太多噪声，可能需要增大这个值。
+
+
+1. branch_thresh
+功能：这个参数定义了被认为是独立分枝的最小长度。在分析骨架时，任何长度小于此阈值的分枝都将被忽略或剪除，这有助于移除图像中的噪声或不重要的小分枝。
+单位：通常以像素单位给出，例如 7 * u.pix 表示长度小于7像素的分枝会被排除。
+应用：增大这个值可以减少结果中的小分枝，使骨架更加简洁，但过大的值可能忽略重要的结构信息。
+2. prune_criteria
+功能：这个参数指定了用于剪枝（即移除不重要分枝）的标准。在 FilFinder2D 中，这个参数决定了剪枝的依据，比如基于分枝的长度。
+选项：常见的选项包括 'length'，意味着剪枝过程将基于分枝的长度进行；也可能有其他标准，如分枝的直径或复杂度等。
+应用：选择合适的剪枝标准对于保持骨架的重要特征和去除冗余部分至关重要。
+3. skel_thresh
+功能：这个参数用于设置分析骨架时的敏感度阈值。它通常用于确定骨架点在图像中的处理方式，尤其是在将骨架化结果与原始图像数据进行比较时。
+单位：同样以像素为单位，例如 1 * u.pix 表示在处理骨架时使用的灵敏度阈值。
+应用：调整此参数可以帮助确定哪些骴骨点应该保留在最终的骨架图中，通常用于调整骨架的细节级别，影响分析的精确性。
+
+
+ /Users/naoj306/Desktop/find/slice/new_wcs_diff_1-99_nonan_fil_3-3/12CO_x531_slice_diff_nonan_updated.fits...
+444
+71
+ --------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+/var/folders/wb/s4dqfxfn16g_0zfhszql_yt80000gn/T/ipykernel_2265/451623357.py in <module>
+     85                 branch_tempo_coords = (y_pix_all+y_start, x_pix_all+x_start)
+     86                 branch_tempo = Filament2D(branch_tempo_coords)
+---> 87                 branch_tempo.skeleton_analysis(hdu.data)
+     88
+     89                 try:
+
+/opt/miniconda3/envs/py37/lib/python3.7/site-packages/fil_finder/filament.py in skeleton_analysis(self, image, verbose, save_png, save_name, prune_criteria, relintens_thresh, max_prune_iter, branch_thresh)
+    270                 longest_path(edge_list, nodes,
+    271                              verbose=False,
+--> 272                              skeleton_arrays=labeled_mask)
+    273
+    274             # Skip pruning if skeleton has only one branch
+
+/opt/miniconda3/envs/py37/lib/python3.7/site-packages/fil_finder/length.py in longest_path(edge_list, nodes, verbose, skeleton_arrays, save_png, save_name, test_print)
+    446             values.append(j[1])
+    447
+--> 448         max_path_length = max(values)
+    449         start, finish = node_extrema[values.index(max_path_length)]
+    450         extremum.append([start, finish])
+
+ValueError: max() arg is an empty sequence
+
+
+
+Processing /Users/naoj306/Desktop/find/slice/new_wcs_diff_1-99_nonan_fil_3-3/12CO_x320_slice_diff_nonan_updated.fits..
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+/var/folders/wb/s4dqfxfn16g_0zfhszql_yt80000gn/T/ipykernel_2265/451623357.py in <module>
+     93                     continue
+     94
+---> 95                 branch_tempo.width_analysis(hdu.data, deconvolve_width=False)
+     96                 pos_x_wcs_array, pos_y_wcs_array = w.wcs_pix2world(x_pix_all+x_start, y_pix_all+y_start, 0)
+     97                 pos_x_wcs_list += list(pos_x_wcs_array)
+
+/opt/miniconda3/envs/py37/lib/python3.7/site-packages/fil_finder/filament.py in width_analysis(self, image, all_skeleton_array, max_dist, pad_to_distance, fit_model, fitter, try_nonparam, use_longest_path, add_width_to_length, deconvolve_width, beamwidth, fwhm_function, chisq_max, **kwargs)
+    924                 nonparam_width(dist.value, radprof.value,
+    925                                unbin_dist, unbin_radprof,
+--> 926                                None, 5, 99)
+    927             self._radprof_type = 'nonparam'
+    928
+
+/opt/miniconda3/envs/py37/lib/python3.7/site-packages/fil_finder/width.py in nonparam_width(distance, rad_profile, unbin_dist, unbin_prof, img_beam, bkg_percent, peak_percent)
+    300
+    301     error_range_pts = np.logical_and(unbin_prof > lower, unbin_prof < upper)
+--> 302     width_error = np.max(unbin_dist[error_range_pts]) -\
+    303         np.min(unbin_dist[error_range_pts])
+    304
+
+<__array_function__ internals> in amax(*args, **kwargs)
+
+/opt/miniconda3/envs/py37/lib/python3.7/site-packages/numpy/core/fromnumeric.py in amax(a, axis, out, keepdims, initial, where)
+   2753     """
+   2754     return _wrapreduction(a, np.maximum, 'max', axis, None, out,
+-> 2755                           keepdims=keepdims, initial=initial, where=where)
+   2756
+   2757
+
+/opt/miniconda3/envs/py37/lib/python3.7/site-packages/numpy/core/fromnumeric.py in _wrapreduction(obj, ufunc, method, axis, dtype, out, **kwargs)
+     84                 return reduction(axis=axis, out=out, **passkwargs)
+     85
+---> 86     return ufunc.reduce(obj, axis, dtype, out, **passkwargs)
+     87
+     88
+ValueError: zero-size array to reduction operation maximum which has no identity

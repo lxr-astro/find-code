@@ -1,0 +1,44 @@
+filfinder
+- aquila 12
+534 533 750
+yv 533*750
+filter: diff median 1*99 - median 3*3
+    mask_created = fil.create_mask(
+        verbose=True,
+        adapt_thresh=3 * u.pix,
+        smooth_size=1 * u.pix,
+        size_thresh=3 * u.pix**2,
+        glob_thresh=0.5,
+        fill_hole_size=1 * u.pix**2
+    )
+    fil.skeleton, distance = medial_axis(fil.mask, return_distance=True)
+
+    # 分析骨架
+    try:
+        fil.analyze_skeletons(branch_thresh=7*u.pix, prune_criteria='length', skel_thresh=1*u.pix)
+min_length = 10 * u.pix # この長さを超えていなければフィラメントとして認めない
+max_dist = 50 * u.pix # フィラメントの幅を見積もるために強度をサーチしに行く最大距離
+angle_range = 20
+
+- orion 12
+716 1180 222
+yv 1180*222
+filter: diff median 1*99 - median 3*3
+    mask_created = fil.create_mask(
+        verbose=True,
+        adapt_thresh=3 * u.pix,
+        smooth_size=1 * u.pix,
+        size_thresh=3 * u.pix**2,
+        glob_thresh=0.5,
+        fill_hole_size=1 * u.pix**2
+    )
+   0.5，1，0.5，2，0.5
+
+    fil.skeleton, distance = medial_axis(fil.mask, return_distance=True)
+
+    # 分析骨架
+    try:
+        fil.analyze_skeletons(branch_thresh=5*u.pix, prune_criteria='length', skel_thresh=1*u.pix)
+min_length = 7 * u.pix # この長さを超えていなければフィラメントとして認めない
+max_dist = 50 * u.pix # フィラメントの幅を見積もるために強度をサーチしに行く最大距離
+angle_range = 20
